@@ -372,9 +372,9 @@
       </div>
     </div>
   </div>
-  <div id="message"></div>
-  <div id="board"></div>
-  <div id="keyboard"></div>
+  <div id="message" aria-live="polite" role="status"></div>
+  <div id="board" role="grid" aria-label="Wordle game board"></div>
+  <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
   <button id="new-game">New Game</button>
 
   <script>
@@ -454,6 +454,8 @@
     let currentRow = 0;
     let currentCol = 0;
     let gameOver = false;
+    let isAnimating = false;
+    let isComposing = false;
     let board = [];
 
     const boardEl = document.getElementById('board');
@@ -533,11 +535,16 @@
       ['Enter','Z','X','C','V','B','N','M','Backspace']
     ];
 
+    function getAnswer() {
+      return WORDS[answerIndex].toUpperCase();
+    }
+
     function initGame() {
-      answer = WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase();
+      answerIndex = Math.floor(Math.random() * WORDS.length);
       currentRow = 0;
       currentCol = 0;
       gameOver = false;
+      isAnimating = false;
       board = Array.from({ length: 6 }, () => Array(5).fill(''));
       messageEl.textContent = '';
       messageEl.classList.remove('show');
@@ -552,10 +559,14 @@
         const row = document.createElement('div');
         row.className = 'row';
         row.id = `row-${r}`;
+        row.setAttribute('role', 'row');
+        row.setAttribute('aria-label', `Row ${r + 1}`);
         for (let c = 0; c < 5; c++) {
           const tile = document.createElement('div');
           tile.className = 'tile';
           tile.id = `tile-${r}-${c}`;
+          tile.setAttribute('role', 'gridcell');
+          tile.setAttribute('aria-label', `Row ${r + 1}, Letter ${c + 1}: empty`);
           tile.textContent = board[r][c];
           row.appendChild(tile);
         }
@@ -575,8 +586,10 @@
           if (key === 'Enter' || key === 'Backspace') {
             btn.classList.add('wide');
             btn.textContent = key === 'Backspace' ? '⌫' : key;
+            btn.setAttribute('aria-label', key);
           } else {
             btn.textContent = key;
+            btn.setAttribute('aria-label', `Letter ${key}`);
           }
           btn.addEventListener('mousedown', (e) => e.preventDefault());
           btn.addEventListener('click', () => handleInput(key));
@@ -587,7 +600,7 @@
     }
 
     function handleInput(key) {
-      if (gameOver) return;
+      if (gameOver || isAnimating) return;
 
       if (key === 'Backspace') {
         if (currentCol > 0) {
@@ -596,6 +609,7 @@
           const tile = document.getElementById(`tile-${currentRow}-${currentCol}`);
           tile.textContent = '';
           tile.classList.remove('filled');
+          tile.setAttribute('aria-label', `Row ${currentRow + 1}, Letter ${currentCol + 1}: empty`);
         }
         return;
       }
@@ -615,13 +629,24 @@
         const tile = document.getElementById(`tile-${currentRow}-${currentCol}`);
         tile.textContent = key;
         tile.classList.add('filled');
+        tile.setAttribute('aria-label', `Row ${currentRow + 1}, Letter ${currentCol + 1}: ${key}`);
         currentCol++;
       }
     }
 
     function submitGuess() {
       const guess = board[currentRow].join('');
-      const result = evaluateGuess(guess);
+
+      // Word validation
+      if (!WORD_SET.has(guess)) {
+        showMessage('Not in word list');
+        shakeRow(currentRow);
+        return;
+      }
+
+      isAnimating = true;
+      const answer = getAnswer();
+      const result = evaluateGuess(guess, answer);
 
       const row = document.getElementById(`row-${currentRow}`);
       const tiles = row.querySelectorAll('.tile');
@@ -639,6 +664,7 @@
       const totalDelay = 5 * 300 + 500;
 
       setTimeout(() => {
+        isAnimating = false;
         if (guess === answer) {
           gameOver = true;
           showMessage('Excellent!');
@@ -659,7 +685,7 @@
       }, totalDelay);
     }
 
-    function evaluateGuess(guess) {
+    function evaluateGuess(guess, answer) {
       const result = Array(5).fill('absent');
       const answerArr = answer.split('');
       const guessArr = guess.split('');
@@ -723,8 +749,18 @@
       });
     }
 
+    // IME composition handling (Korean input etc.)
+    document.addEventListener('compositionstart', () => { isComposing = true; });
+    document.addEventListener('compositionend', (e) => {
+      isComposing = false;
+      if (e.data && !/^[a-zA-Z]*$/.test(e.data)) {
+        showMessage('English letters only');
+      }
+    });
+
     // Physical keyboard support
     document.addEventListener('keydown', (e) => {
+      if (isComposing) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.repeat) return;
 
