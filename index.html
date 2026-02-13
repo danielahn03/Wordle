@@ -198,10 +198,10 @@
     }
 
     #new-game {
-      margin-top: 6px;
-      margin-bottom: 8px;
-      padding: 10px 20px;
-      flex-shrink: 0;
+      display: none;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px 0;
       background-color: #538d4e;
       color: white;
       border: none;
@@ -209,7 +209,7 @@
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
-      display: none;
+      letter-spacing: 1px;
     }
 
     #new-game:hover {
@@ -417,6 +417,7 @@
         <h3>GUESS DISTRIBUTION</h3>
         <div id="dist-bars"></div>
       </div>
+      <button id="new-game">New Game</button>
     </div>
   </div>
   <input id="hidden-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
@@ -424,7 +425,6 @@
   <div id="message" aria-live="polite" role="status"></div>
   <div id="board" role="grid" aria-label="Wordle game board"></div>
   <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
-  <button id="new-game">New Game</button>
 
   <script src="words.js"></script>
   <script>
@@ -502,6 +502,9 @@
         row.appendChild(bar);
         distBars.appendChild(row);
       }
+
+      // Show New Game button only when game is over
+      newGameBtn.style.display = gameOver ? 'block' : 'none';
 
       statsOverlay.classList.add('open');
     }
@@ -653,13 +656,11 @@
           gameOver = true;
           showMessage('Excellent!');
           bounceTiles(currentRow);
-          newGameBtn.style.display = 'block';
           recordWin(currentRow);
           setTimeout(() => showStats(currentRow), 1500);
         } else if (currentRow === 5) {
           gameOver = true;
           showMessage(`Answer: ${answer}`);
-          newGameBtn.style.display = 'block';
           recordLoss();
           setTimeout(() => showStats(), 1500);
         } else {
@@ -810,6 +811,7 @@
     });
 
     newGameBtn.addEventListener('click', () => {
+      statsOverlay.classList.remove('open');
       initGame();
       focusHiddenInput();
     });
