@@ -18,7 +18,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       user-select: none;
     }
 
@@ -28,24 +29,26 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 16px 0;
+      padding: 8px 0;
       border-bottom: 1px solid #3a3a3c;
       position: relative;
+      flex-shrink: 0;
     }
 
     header h1 {
-      font-size: 36px;
+      font-size: 28px;
       font-weight: 700;
       letter-spacing: 4px;
     }
 
     #message {
-      height: 40px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
+      flex-shrink: 0;
     }
 
     #message.show {
@@ -60,23 +63,25 @@
     #board {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      padding: 10px 0;
+      gap: 4px;
+      padding: 6px 0;
+      flex: 1;
+      justify-content: center;
     }
 
     .row {
       display: flex;
-      gap: 5px;
+      gap: 4px;
     }
 
     .tile {
-      width: 62px;
-      height: 62px;
+      width: 56px;
+      height: 56px;
       border: 2px solid #3a3a3c;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
       text-transform: uppercase;
       transition: transform 0.1s ease;
@@ -142,8 +147,9 @@
     #keyboard {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 20px 0;
+      gap: 6px;
+      padding: 8px 0;
+      flex-shrink: 0;
     }
 
     .keyboard-row {
@@ -153,9 +159,9 @@
     }
 
     .key {
-      height: 58px;
-      min-width: 43px;
-      padding: 0 8px;
+      height: 50px;
+      min-width: 36px;
+      padding: 0 6px;
       border-radius: 4px;
       background-color: #818384;
       color: #ffffff;
@@ -175,8 +181,8 @@
     }
 
     .key.wide {
-      min-width: 65px;
-      font-size: 12px;
+      min-width: 56px;
+      font-size: 11px;
     }
 
     .key.correct {
@@ -192,8 +198,10 @@
     }
 
     #new-game {
-      margin-top: 10px;
-      padding: 12px 24px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+      padding: 10px 20px;
+      flex-shrink: 0;
       background-color: #538d4e;
       color: white;
       border: none;
@@ -327,25 +335,64 @@
 
     @media (max-width: 500px) {
       .tile {
-        width: 52px;
-        height: 52px;
-        font-size: 26px;
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
       }
 
       .key {
-        height: 50px;
-        min-width: 32px;
-        padding: 0 5px;
-        font-size: 12px;
+        height: 44px;
+        min-width: 28px;
+        padding: 0 4px;
+        font-size: 11px;
       }
 
       .key.wide {
-        min-width: 50px;
-        font-size: 10px;
+        min-width: 44px;
+        font-size: 9px;
       }
 
       header h1 {
-        font-size: 28px;
+        font-size: 24px;
+      }
+    }
+
+    @media (max-height: 600px) {
+      .tile {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+      }
+
+      #board {
+        gap: 3px;
+        padding: 4px 0;
+      }
+
+      .row {
+        gap: 3px;
+      }
+
+      .key {
+        height: 38px;
+      }
+
+      #keyboard {
+        gap: 4px;
+        padding: 4px 0;
+      }
+
+      header {
+        padding: 4px 0;
+      }
+
+      header h1 {
+        font-size: 22px;
+      }
+
+      #message {
+        height: 22px;
+        font-size: 12px;
       }
     }
   </style>
@@ -372,83 +419,19 @@
       </div>
     </div>
   </div>
+  <input id="hidden-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+    style="position:absolute;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px;">
   <div id="message" aria-live="polite" role="status"></div>
   <div id="board" role="grid" aria-label="Wordle game board"></div>
   <div id="keyboard" role="group" aria-label="On-screen keyboard"></div>
   <button id="new-game">New Game</button>
 
+  <script src="words.js"></script>
   <script>
-    const WORDS = [
-      "about","above","abuse","actor","acute","admit","adopt","adult","after","again",
-      "agent","agree","ahead","alarm","album","alert","alien","align","alive","alley",
-      "allow","alone","along","alter","among","angel","anger","angle","angry","apart",
-      "apple","apply","arena","argue","arise","armor","array","aside","asset","audit",
-      "avoid","award","aware","badly","baker","bases","basic","basis","beach","began",
-      "begin","being","below","bench","bible","birth","black","blade","blame","blank",
-      "blast","bleed","blend","bless","blind","block","blood","bloom","blown","board",
-      "bonus","boost","booth","bound","brain","brand","brave","bread","break","breed",
-      "brief","bring","broad","broke","brown","brush","buddy","build","bunch","burst",
-      "buyer","cabin","cable","candy","cargo","carry","catch","cause","cedar","chain",
-      "chair","chaos","charm","chart","chase","cheap","check","cheek","chess","chest",
-      "chief","child","china","chunk","claim","class","clean","clear","climb","cling",
-      "clock","clone","close","cloth","cloud","coach","coast","comic","coral","count",
-      "court","cover","crack","craft","crane","crash","crazy","cream","crime","cross",
-      "crowd","crown","cruel","crush","curve","cycle","daily","dance","death","debut",
-      "delay","delta","demon","depth","derby","dirty","doubt","dough","draft","drain",
-      "drama","drank","drawn","dream","dress","dried","drift","drill","drink","drive",
-      "drops","drunk","dying","eager","early","earth","eight","elite","empty","enemy",
-      "enjoy","enter","entry","equal","error","essay","event","every","exact","exert",
-      "exile","exist","extra","faith","false","fancy","fatal","fault","feast","fence",
-      "fever","fiber","field","fifth","fifty","fight","final","first","fixed","flame",
-      "flash","fleet","flesh","float","flood","floor","flour","fluid","flush","focal",
-      "focus","force","forge","forth","found","frame","frank","fraud","fresh","front",
-      "fruit","fully","giant","given","glass","globe","going","grace","grade","grain",
-      "grand","grant","graph","grasp","grass","grave","great","green","greet","grief",
-      "grill","gross","group","grown","guard","guess","guest","guide","guilt","happy",
-      "harsh","heart","heavy","hence","herbs","horse","hotel","house","human","humor",
-      "ideal","image","imply","index","indie","inner","input","irony","issue","ivory",
-      "jewel","joint","judge","juice","juicy","knife","knock","known","label","labor",
-      "large","laser","later","laugh","layer","learn","least","leave","legal","lemon",
-      "level","light","limit","linen","lives","local","lodge","logic","lonely","loose",
-      "lover","lower","loyal","lucky","lunch","magic","major","maker","manor","maple",
-      "march","match","maybe","mayor","media","mercy","merit","metal","might","minor",
-      "minus","mixed","model","money","month","moral","motor","mount","mouse","mouth",
-      "movie","music","naked","nerve","never","newly","night","noble","noise","novel",
-      "nurse","ocean","offer","often","olive","onset","opera","orbit","order","organ",
-      "other","outer","owner","oxide","paint","panel","panic","paper","patch","pause",
-      "peace","pearl","penny","phase","phone","photo","piano","piece","pilot","pitch",
-      "pixel","place","plain","plane","plant","plate","plaza","plead","pluck","point",
-      "poker","polar","pound","power","press","price","pride","prime","prince","print",
-      "prior","prize","probe","prone","proof","proud","prove","proxy","pulse","punch",
-      "pupil","queen","query","quest","queue","quick","quiet","quite","quota","quote",
-      "radar","radio","raise","rally","range","rapid","ratio","reach","react","ready",
-      "realm","rebel","refer","reign","relax","reply","rider","ridge","rifle","right",
-      "rigid","rival","river","robin","robot","rocky","roman","rough","round","route",
-      "royal","rugby","rural","saint","salad","scale","scene","scope","score","sense",
-      "serve","setup","seven","shade","shall","shame","shape","share","shark","sharp",
-      "sheep","sheer","sheet","shelf","shell","shift","shine","shirt","shock","shore",
-      "short","shout","sight","sigma","since","sixth","sixty","sized","skill","skull",
-      "slave","sleep","slice","slide","slope","small","smart","smell","smile","smoke",
-      "snake","solar","solid","solve","sorry","sound","south","space","spare","speak",
-      "speed","spend","spent","spill","spine","spite","split","spoke","sport","spray",
-      "squad","stack","staff","stage","stake","stall","stamp","stand","stare","start",
-      "state","stays","steam","steel","steep","steer","stern","stick","stiff","still",
-      "stock","stone","stood","store","storm","story","stove","stuff","style","sugar",
-      "suite","super","surge","swamp","swear","sweep","sweet","swift","swing","sword",
-      "table","taken","taste","teach","teeth","thank","theme","thick","thing","think",
-      "third","those","three","throw","thumb","tiger","tight","timer","tired","title",
-      "today","token","topic","total","touch","tough","towel","tower","toxic","trace",
-      "track","trade","trail","train","trait","trash","treat","trend","trial","tribe",
-      "trick","tried","troop","truck","truly","trump","trunk","trust","truth","tumor",
-      "twist","ultra","uncle","under","unify","union","unite","unity","until","upper",
-      "upset","urban","usage","usual","valid","value","valve","video","vigor","viral",
-      "virus","visit","vital","vivid","vocal","voice","voter","wagon","waste","watch",
-      "water","weave","weigh","weird","wheat","wheel","where","which","while","white",
-      "whole","whose","woman","world","worry","worse","worst","worth","would","wound",
-      "wrist","write","wrong","wrote","yield","young","youth"
-    ];
-
-    const WORD_SET = new Set(WORDS.map(w => w.toUpperCase()));
+    // ANSWERS: words that can be the answer (~1500)
+    // VALID_GUESSES: additional words accepted as guesses (~8500)
+    // Both are loaded from words.js
+    const ALL_VALID = new Set([...ANSWERS, ...VALID_GUESSES].map(w => w.toUpperCase()));
 
     let answerIndex = -1;
     let currentRow = 0;
@@ -536,11 +519,11 @@
     ];
 
     function getAnswer() {
-      return WORDS[answerIndex].toUpperCase();
+      return ANSWERS[answerIndex].toUpperCase();
     }
 
     function initGame() {
-      answerIndex = Math.floor(Math.random() * WORDS.length);
+      answerIndex = Math.floor(Math.random() * ANSWERS.length);
       currentRow = 0;
       currentCol = 0;
       gameOver = false;
@@ -551,6 +534,7 @@
       newGameBtn.style.display = 'none';
       renderBoard();
       renderKeyboard();
+      focusHiddenInput();
     }
 
     function renderBoard() {
@@ -638,7 +622,7 @@
       const guess = board[currentRow].join('');
 
       // Word validation
-      if (!WORD_SET.has(guess)) {
+      if (!ALL_VALID.has(guess)) {
         showMessage('Not in word list');
         shakeRow(currentRow);
         return;
@@ -749,17 +733,66 @@
       });
     }
 
-    // IME composition handling (Korean input etc.)
-    document.addEventListener('compositionstart', () => { isComposing = true; });
-    document.addEventListener('compositionend', (e) => {
+    // Hidden input for reliable keyboard capture (including IME/Korean)
+    const hiddenInput = document.getElementById('hidden-input');
+
+    function focusHiddenInput() {
+      hiddenInput.focus({ preventScroll: true });
+    }
+
+    // Keep hidden input focused
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.key') && !e.target.closest('#stats-btn') &&
+          !e.target.closest('#stats-modal') && !e.target.closest('#new-game')) {
+        focusHiddenInput();
+      }
+    });
+
+    // IME composition handling
+    hiddenInput.addEventListener('compositionstart', () => { isComposing = true; });
+    hiddenInput.addEventListener('compositionend', (e) => {
       isComposing = false;
       if (e.data && !/^[a-zA-Z]*$/.test(e.data)) {
         showMessage('English letters only');
       }
+      hiddenInput.value = '';
     });
 
-    // Physical keyboard support
+    // Capture input events (catches Korean/IME input reliably)
+    hiddenInput.addEventListener('input', (e) => {
+      if (isComposing) return;
+      const val = hiddenInput.value;
+      hiddenInput.value = '';
+      if (!val) return;
+
+      for (const ch of val) {
+        if (/^[a-zA-Z]$/.test(ch)) {
+          handleInput(ch.toUpperCase());
+        } else {
+          showMessage('English letters only');
+          return;
+        }
+      }
+    });
+
+    // Physical keyboard support (Enter, Backspace, and fallback)
+    hiddenInput.addEventListener('keydown', (e) => {
+      if (isComposing) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.repeat) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleInput('Enter');
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleInput('Backspace');
+      }
+    });
+
+    // Fallback: also listen on document for when hidden input loses focus
     document.addEventListener('keydown', (e) => {
+      if (document.activeElement === hiddenInput) return;
       if (isComposing) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.repeat) return;
@@ -776,7 +809,10 @@
       }
     });
 
-    newGameBtn.addEventListener('click', initGame);
+    newGameBtn.addEventListener('click', () => {
+      initGame();
+      focusHiddenInput();
+    });
 
     initGame();
   </script>
